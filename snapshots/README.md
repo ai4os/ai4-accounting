@@ -25,11 +25,16 @@ deactivate
 
 And you will get the reports for both namespaces:
 
+<html>
+
+<head>
+<meta charset="UTF-8">
 <style>
 .r1 {font-style: italic}
 .r2 {color: #008080; text-decoration-color: #008080}
 .r3 {color: #ffafd7; text-decoration-color: #ffafd7}
 </style>
+</head>
 
 <body>
 <pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code>
@@ -49,3 +54,5 @@ And you will get the reports for both namespaces:
 └─────────────┴────────┘
 </code></pre>
 </body>
+
+</html>
