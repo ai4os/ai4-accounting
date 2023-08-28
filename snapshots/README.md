@@ -25,34 +25,19 @@ deactivate
 
 And you will get the reports for both namespaces:
 
-<html>
-
-<head>
-<meta charset="UTF-8">
-<style>
-.r1 {font-style: italic}
-.r2 {color: #008080; text-decoration-color: #008080}
-.r3 {color: #ffafd7; text-decoration-color: #ffafd7}
-</style>
-</head>
-
-<body>
-<pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code>
-<span class="r1">AI4EOSC accounting for the period 2023-09-01:2023-12-31</span>
+```bash
+AI4EOSC accounting for the period 2023-09-01:2023-12-31
 ┌─────────────┬──────────┐
-│<span class="r2">  cpu_num/hr </span>│<span class="r3">     3408 </span>│
-│<span class="r2">  gpu_num/hr </span>│<span class="r3">      408 </span>│
-│<span class="r2"> memoryMB/hr </span>│<span class="r3">  8280000 </span>│
-│<span class="r2">   diskMB/hr </span>│<span class="r3"> 10713600 </span>│
+│  cpu_num/hr │     3408 │
+│  gpu_num/hr │      408 │
+│ memoryMB/hr │  8280000 │
+│   diskMB/hr │ 10713600 │
 └─────────────┴──────────┘
-<span class="r1">IMAGINE accounting for the period 2023-09-01:2023-12-31</span>
+IMAGINE accounting for the period 2023-09-01:2023-12-31
 ┌─────────────┬────────┐
-│<span class="r2">  cpu_num/hr </span>│<span class="r3">    336 </span>│
-│<span class="r2">  gpu_num/hr </span>│<span class="r3">      0 </span>│
-│<span class="r2"> memoryMB/hr </span>│<span class="r3"> 768000 </span>│
-│<span class="r2">   diskMB/hr </span>│<span class="r3"> 727200 </span>│
+│  cpu_num/hr │    336 │
+│  gpu_num/hr │      0 │
+│ memoryMB/hr │ 768000 │
+│   diskMB/hr │ 727200 │
 └─────────────┴────────┘
-</code></pre>
-</body>
-
-</html>
+```
