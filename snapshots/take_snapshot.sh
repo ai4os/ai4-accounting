@@ -1,8 +1,8 @@
 # Take a snapshot of the Nomad cluster.
 # Make sure to properly adapt the paths to the Nomad certs
 #
-# This script is added as a daily cron job (at 3am):
-# 0 3 * * * /home/ubuntu/accounting/snapshots/take_snapshot.sh
+# This script is added as a daily cron job (at 12am):
+# 00 12 * * * /bin/bash /home/ubuntu/accounting/snapshots/take_snapshot.sh
 
 # Export proper Nomad variables
 export NOMAD_ADDR=https://193.146.75.221:4646  # production cluster
