@@ -17,9 +17,6 @@ def main(
     end_date: str,
     ):
 
-    # ini_date = '2023-08-01'
-    # end_date = '2023-09-10'
-
     namespaces = ['ai4eosc', 'imagine']
     accounting ={k: {} for k in namespaces}
 
@@ -39,6 +36,11 @@ def main(
                 # Discard jobs that where not running
                 if job['status'] != 'running':
                     continue
+
+                # Older jobs where misconfigured (cpuMHz was set instead of cpu_cores)
+                #TODO: remove when old jobs no longer exist
+                if job['resources']['cpu_num'] == 0:
+                    job['resources']['cpu_num'] = job['resources']['cpu_MHz']
 
                 # Add to overall accounting
                 for k, v in job['resources'].items():
@@ -68,5 +70,15 @@ def main(
         console.print(table, soft_wrap=True)
         # print(console.export_html())
 
+    #TODO: remove when old jobs no longer exist
+    console.print(
+        "[orange1][b]Warning[not b][not orange1] cpu_MHz numbers might be unreliable due to old jobs " \
+        "being misconfigured",
+    )
+
 if __name__ == "__main__":
-    typer.run(main)
+    # typer.run(main)
+    main(
+        ini_date='2023-08-01',
+        end_date = '2023-09-10',
+    )
