@@ -2,7 +2,7 @@
 Take a snapshot of the current state of the cluster.
 """
 
-from datetime import date, datetime
+from datetime import datetime
 import json
 from pathlib import Path
 import re
@@ -33,7 +33,7 @@ Nomad.job.get_evaluations = types.MethodType(
     Nomad.job
     )
 
-snapshot_dir = Path(__file__).resolve().parent / 'daily-snapshots'
+snapshot_dir = Path(__file__).resolve().parent / 'snapshots'
 
 
 def get_deployment(
@@ -71,6 +71,8 @@ def get_deployment(
         'endpoints': {},
         'main_endpoint': None,
         'alloc_ID': None,
+        'alloc_start': None,
+        'alloc_end': None,
     }
 
     # Retrieve Docker image
@@ -170,6 +172,10 @@ def get_deployment(
             'disk_MB': res['Shared']['DiskMB'],
         }
 
+        # Add datetimes
+        info['alloc_start'] = a['TaskStates']['usertask']['StartedAt']
+        info['alloc_end'] = a['TaskStates']['usertask']['FinishedAt']
+
     elif evals:
         # Something happened, job didn't deploy (eg. job needs port that's currently being used)
         # We have to return `placement failures message`.
@@ -195,9 +201,6 @@ if __name__ == "__main__":
 
         jobs = Nomad.jobs.get_jobs(namespace=namespace)  # job summaries
         for j in jobs:
-            # Skip deleted jobs
-            if j['Status'] == 'dead':
-                continue
 
             # Skip jobs that do not start with userjob
             # (useful for admins who might have deployed other jobs eg. Traefik)
@@ -216,5 +219,5 @@ if __name__ == "__main__":
                 print(f"   Failed to retrieve {j['ID']}")
 
     # Save snapshot
-    with open(snapshot_dir / f'{date.today()}.json', 'w') as f:
+    with open(snapshot_dir / f'{datetime.utcnow().replace(microsecond=0).isoformat()}.json', 'w') as f:
         json.dump(snapshot, f)
