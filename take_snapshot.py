@@ -198,6 +198,9 @@ def get_deployment(
             'memory_MB': res['MemoryMB'],
             'disk_MB': j['TaskGroups'][0]['EphemeralDisk']['SizeMB'],
         }
+    # Dead jobs should have dead state, otherwise status will be misleading (for example)
+    if j['Status'] == 'dead':
+        info['status'] = 'dead'
     return info
 
 
