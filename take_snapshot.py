@@ -71,8 +71,6 @@ def get_deployment(
         'endpoints': {},
         'main_endpoint': None,
         'alloc_ID': None,
-        'alloc_start': None,
-        'alloc_end': None,
     }
 
     # Retrieve tasks
@@ -174,10 +172,6 @@ def get_deployment(
             'disk_MB': a['AllocatedResources']['Shared']['DiskMB'],
         }
 
-        # Add datetimes
-        info['alloc_start'] = a['TaskStates']['usertask']['StartedAt']
-        info['alloc_end'] = a['TaskStates']['usertask']['FinishedAt']
-
     elif evals:
         # Something happened, job didn't deploy (eg. job needs port that's currently being used)
         # We have to return `placement failures message`.
@@ -198,12 +192,25 @@ def get_deployment(
             'memory_MB': res['MemoryMB'],
             'disk_MB': j['TaskGroups'][0]['EphemeralDisk']['SizeMB'],
         }
+
+    #==================================================================================#
+    # ADD SOME ACCOUNTING-SPECIFIC CODE                                                #
+    #==================================================================================#
+    info['alloc_start'] = None
+    info['alloc_end'] = None
+
+    # Add allocation start and end
+    if allocs:
+        info['alloc_start'] = a['TaskStates']['usertask']['StartedAt']
+        info['alloc_end'] = a['TaskStates']['usertask']['FinishedAt']
+
     # Dead jobs should have dead state, otherwise status will be misleading (for example)
     if j['Status'] == 'dead':
         info['status'] = 'dead'
+
+    #==================================================================================#
+
     return info
-
-
 
 
 if __name__ == "__main__":
