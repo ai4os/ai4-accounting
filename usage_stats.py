@@ -46,6 +46,10 @@ def main(
                 if job['status'] not in ['running', 'dead']:
                     continue
 
+                # Ignore dead jobs that failed without ever been deployed
+                if job['status'] == 'dead' and not job['alloc_start']:
+                    continue
+
                 # Older jobs where misconfigured (cpuMHz was set instead of cpu_cores)
                 #TODO: remove when old jobs no longer exist
                 if job['resources']['cpu_num'] == 0:
@@ -105,8 +109,8 @@ def main(
     )
 
 if __name__ == "__main__":
-    typer.run(main)
-    # main(
-    #     ini_date='2023-09-01',
-    #     end_date = '2023-09-10',
-    # )
+    # typer.run(main)
+    main(
+        ini_date='2023-09-01',
+        end_date = '2023-09-10',
+    )
