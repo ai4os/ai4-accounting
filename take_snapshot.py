@@ -69,6 +69,7 @@ def get_deployment(
         ).strftime('%Y-%m-%d %H:%M:%S'),  # nanoseconds to timestamp
         'resources': {},
         'endpoints': {},
+        'active_endpoints': None,
         'main_endpoint': None,
         'alloc_ID': None,
     }
@@ -104,6 +105,11 @@ def get_deployment(
 
         info['endpoints'][label] = f"http://{url}"
 
+    # Add '/ui' to deepaas endpoint
+    # If in the future we support other APIs, this will have to be removed.
+    if 'api' in info['endpoints'].keys():
+        info['endpoints']['api'] += '/ui'
+
     # Add quick-access (main endpoint) + customize endpoints
     service2endpoint = {
         'deepaas': 'api',
@@ -116,16 +122,12 @@ def get_deployment(
             info['docker_command'],
             ).group(1)
 
-        # Customize deepaas endpoint
-        if service == 'deepaas':
-            info['endpoints']['api'] += '/ui'
-
-        info['main_endpoint'] = info['endpoints'][service2endpoint[service]]
+        info['main_endpoint'] = service2endpoint[service]
 
     except Exception:  # return first endpoint
         info['main_endpoint'] = list(info['endpoints'].values())[0]
 
-    # Only fill (resources + endpoints) if the job is allocated
+    # Only fill resources if the job is allocated
     allocs = Nomad.job.get_allocations(
         id_=j['ID'],
         namespace=namespace,
@@ -136,19 +138,44 @@ def get_deployment(
         )
     if allocs:
 
-        # Keep only the most recent allocation per job
+        # Reorder allocations based on recency
         dates = [a['CreateTime'] for a in allocs]
-        idx = dates.index(max(dates))
+        allocs = [x for _, x in sorted(
+            zip(dates, allocs),
+            key=lambda pair: pair[0],
+            )][::-1]  # more recent first
+
+        # Select the proper allocation
+        statuses = [a['ClientStatus'] for a in allocs]
+        if 'unknown' in statuses:
+            # The node has lost connection. Avoid showing temporary reallocated job,
+            # to avoid confusions when the original allocation is restored back again.
+            idx = statuses.index('unknown')
+        elif 'running' in statuses:
+            # If an allocation is running, return that allocation
+            # It happens that after a network cut, when the network is restored,
+            # the temporary allocation created in the meantime (now with status
+            # 'complete') is more recent than the original allocation that we
+            # recovered (with status 'running'), so using only recency does not work.
+            idx = statuses.index('running')
+        else:
+            # Return most recent allocation
+            idx = 0
+
         a = Nomad.allocation.get_allocation(allocs[idx]['ID'])
 
         # Add ID and status
         info['alloc_ID'] = a['ID']
 
+        # Replace Nomad status with a more user-friendly status
         if a['ClientStatus'] == 'pending':
-            info['status'] = 'starting'  # starting is clearer than pending, like done in the UI
+            info['status'] = 'starting'
+        elif a['ClientStatus'] == 'unknown':
+            info['status'] = 'down'
         else:
             info['status'] = a['ClientStatus']
 
+        # Add error messages if needed
         if info['status'] == 'failed':
             info['error_msg'] = a['TaskStates']['usertask']['Events'][0]['Message']
 
@@ -159,6 +186,16 @@ def get_deployment(
                     "Try to run this Docker locally with the command " \
                     f"`{info['docker_command']}` to find what is the error " \
                     "or contact the module owner."
+
+        elif  info['status'] == 'down':
+            info['error_msg'] = \
+                "There seems to be network issues in the cluster. Please wait until " \
+                "the network is restored and you should be able to fully recover " \
+                "your deployment."
+
+        # Disable access to endpoints if there is a network cut
+        if info['status'] == 'down' and info['active_endpoints']:
+            info['active_endpoints'] = []
 
         # Add resources
         res = a['AllocatedResources']['Tasks']['usertask']
