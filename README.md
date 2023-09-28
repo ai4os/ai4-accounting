@@ -66,3 +66,9 @@ IMAGINE accounting for the period 2023-09-01:2023-12-31
 │   diskMB/hr │ 727200 │
 └─────────────┴────────┘
 ```
+
+You can also generate an interactive plot with the historical usage with:
+
+```bash
+python interactive_plot.py
+```
