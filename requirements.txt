@@ -1,3 +1,4 @@
 python-nomad==2.0.0
 rich>=13.5.2
 typer>=0.7.0
+pandas>=1.4.1

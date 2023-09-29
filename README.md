@@ -67,8 +67,13 @@ IMAGINE accounting for the period 2023-09-01:2023-12-31
 └─────────────┴────────┘
 ```
 
-You can also generate an interactive plot with the historical usage with:
+You can generate a daily summary of the logs, along with aggregation statistics per
+namespace/user. Then visualize some interactive plots showing the historical usage:
 
 ```bash
+python summarize.py
 python interactive_plot.py
 ```
+
+> :warning: Due to some side issues, CPU frequency is not very reliable around Sep 2023,
+> though it will keep getting more accurate with time.
