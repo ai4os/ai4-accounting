@@ -18,4 +18,5 @@ cd /home/ubuntu/ai4-accounting/
 # Run .py script
 source ./myenv/bin/activate
 python3 take_snapshot.py
+python3 summarize.py
 deactivate
