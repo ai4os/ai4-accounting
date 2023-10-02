@@ -129,8 +129,10 @@ for namespace in namespaces:
 
 # Aggregated user stats per namespace (in resource-day; eg. GPU-day)
 stats_user = deepcopy(df)
+stats_user = stats_user.groupby(['date', 'namespace', 'owner']).sum()  # aggregate inside hourly snapshots
+stats_user = stats_user.reset_index(level=0)  # move 'date' to column
 stats_user['date'] = stats_user['date'].dt.date  # remove hours
-stats_user = stats_user.groupby(['date', 'namespace', 'owner']).mean()  # mean across daily snapshots
+stats_user = stats_user.groupby(['date', 'namespace', 'owner']).mean()  # daily mean across hourly snapshots
 stats_user = stats_user.groupby(['namespace', 'owner']).sum()  # aggregate days
 stats_user = stats_user.round(0).astype(int)  # round to int
 stats_user = stats_user.reset_index(level=1)  # move 'owner' to column
