@@ -2,7 +2,7 @@
 # Make sure to properly adapt the paths to the Nomad certs
 #
 # This script must run every 6 hours as a cronjob:
-# 0 */4 * * * /bin/bash /home/ubuntu/ai4-accounting/take_snapshot.sh
+# 0 */4 * * * /bin/bash /mnt/ai4-logs/ai4-accounting/take_snapshot.sh
 
 # Export proper Nomad variables
 export NOMAD_ADDR=https://193.146.75.221:4646  # production cluster
@@ -11,7 +11,8 @@ export NOMAD_CLIENT_CERT=/home/ubuntu/nomad-certs/nomad-prod/cli.pem
 export NOMAD_CLIENT_KEY=/home/ubuntu/nomad-certs/nomad-prod/cli-key.pem
 export NOMAD_TLS_SERVER_NAME=server.global.nomad
 
-cd /home/ubuntu/ai4-accounting/
+# Move to main directory (where this script is located)
+cd $(dirname "$0")
 
 #TODO: make git pull?
 
