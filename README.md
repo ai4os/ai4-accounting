@@ -77,3 +77,13 @@ python interactive_plot.py
 
 > :warning: Due to some side issues, CPU frequency is not very reliable around Sep 2023,
 > though it will keep getting more accurate with time.
+
+
+In addition, we keep a json database of users that can be updated using:
+
+```bash
+python update-user-db.py
+```
+
+This will add users with currently running deployments to the database, if not already
+present.

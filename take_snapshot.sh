@@ -20,4 +20,5 @@ cd $(dirname "$0")
 source ./myenv/bin/activate
 python3 take_snapshot.py
 python3 summarize.py
+python3 update-user-db.py
 deactivate
