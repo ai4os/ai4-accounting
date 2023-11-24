@@ -5,7 +5,7 @@
 # 0 */4 * * * /bin/bash /mnt/ai4-logs/ai4-accounting/take_snapshot.sh
 
 # Export proper Nomad variables
-export NOMAD_ADDR=https://193.146.75.221:4646  # production cluster
+export NOMAD_ADDR=https://193.146.75.205:4646  # production cluster
 export NOMAD_CACERT=/home/ubuntu/nomad-certs/nomad-prod/nomad-ca.pem
 export NOMAD_CLIENT_CERT=/home/ubuntu/nomad-certs/nomad-prod/cli.pem
 export NOMAD_CLIENT_KEY=/home/ubuntu/nomad-certs/nomad-prod/cli-key.pem
