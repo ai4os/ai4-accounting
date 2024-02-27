@@ -87,3 +87,9 @@ python update-user-db.py
 
 This will add users with currently running deployments to the database, if not already
 present.
+
+You can merge the summary user stats with the user database, using:
+```bash
+python merge-userdb-stats.py
+```
+and this will create a file `summaries/***-users-agg-merged.csv`.
