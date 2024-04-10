@@ -57,7 +57,7 @@ for namespace in namespaces:
             # (we don't overwrite existing info)
             user = users.get(user_id, {})
             for k in keys:
-                if f'owner_{k}' in j['Meta'] and not user[k]:
+                if (f'owner_{k}' in j['Meta']) and (k not in user.keys()):
                     user[k] = j['Meta'][f'owner_{k}']
             users[user_id] = user
 
