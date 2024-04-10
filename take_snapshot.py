@@ -256,11 +256,13 @@ def get_deployment(
 
 if __name__ == "__main__":
 
+    print("Taking snapshot of the Nomad cluster")
+
     namespaces = ['ai4eosc', 'imagine']
     snapshot = {k: [] for k in namespaces}
     for namespace in namespaces:
 
-        print(f"Processing {namespace} ...")
+        print(f"  Processing {namespace} ...")
 
         jobs = Nomad.jobs.get_jobs(namespace=namespace)  # job summaries
         for j in jobs:

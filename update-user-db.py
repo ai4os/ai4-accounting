@@ -13,6 +13,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+print("Updating users database")
+
 user_dir = Path(__file__).resolve().parent / 'users'
 json_pth = user_dir / "user-db.json"
 csv_pth = user_dir / "user-db.csv"
@@ -31,7 +33,7 @@ namespaces = ['ai4eosc', 'imagine']
 snapshot = {k: [] for k in namespaces}
 for namespace in namespaces:
 
-    print(f"Processing {namespace} ...")
+    print(f"  Processing {namespace} ...")
 
     jobs = Nomad.jobs.get_jobs(namespace=namespace)  # job summaries
     for j in jobs:
