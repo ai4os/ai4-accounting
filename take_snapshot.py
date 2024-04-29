@@ -72,6 +72,7 @@ def get_deployment(
         'active_endpoints': None,
         'main_endpoint': None,
         'alloc_ID': None,
+        'datacenter': None,
     }
 
     # Retrieve tasks
@@ -164,8 +165,11 @@ def get_deployment(
 
         a = Nomad.allocation.get_allocation(allocs[idx]['ID'])
 
-        # Add ID and status
+        # Add ID
         info['alloc_ID'] = a['ID']
+
+        # Add datacenter
+        info['datacenter'] = Nomad.node.get_node(a['NodeID'])['Datacenter']
 
         # Replace Nomad status with a more user-friendly status
         if a['ClientStatus'] == 'pending':
@@ -252,11 +256,13 @@ def get_deployment(
 
 if __name__ == "__main__":
 
+    print("Taking snapshot of the Nomad cluster")
+
     namespaces = ['ai4eosc', 'imagine']
     snapshot = {k: [] for k in namespaces}
     for namespace in namespaces:
 
-        print(f"Processing {namespace} ...")
+        print(f"  Processing {namespace} ...")
 
         jobs = Nomad.jobs.get_jobs(namespace=namespace)  # job summaries
         for j in jobs:

@@ -13,6 +13,8 @@ from pathlib import Path
 import pandas as pd
 
 
+print("Summarizing logs ...")
+
 main_dir = Path(__file__).resolve().parent
 snapshot_dir =  main_dir / 'snapshots'
 summary_dir = main_dir / 'summaries'

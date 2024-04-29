@@ -13,6 +13,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+print("Updating users database")
+
 user_dir = Path(__file__).resolve().parent / 'users'
 json_pth = user_dir / "user-db.json"
 csv_pth = user_dir / "user-db.csv"
@@ -31,7 +33,7 @@ namespaces = ['ai4eosc', 'imagine']
 snapshot = {k: [] for k in namespaces}
 for namespace in namespaces:
 
-    print(f"Processing {namespace} ...")
+    print(f"  Processing {namespace} ...")
 
     jobs = Nomad.jobs.get_jobs(namespace=namespace)  # job summaries
     for j in jobs:
@@ -50,14 +52,14 @@ for namespace in namespaces:
 
             # Ignore job if user is already present in the database and it's user info
             # is complete
-            if user_id in users and set(keys) == set(users[user_id].keys()):
+            if user_id in users and all(users[user_id].values()):
                 continue
 
-            # Add new info if available
-            # We don't overwrite old info
+            # Add new info if available and wasn't defined previously
+            # (we don't overwrite existing info)
             user = users.get(user_id, {})
             for k in keys:
-                if f'owner_{k}' in j['Meta'] and (k not in user.keys()):
+                if (f'owner_{k}' in j['Meta']) and (k not in user.keys()):
                     user[k] = j['Meta'][f'owner_{k}']
             users[user_id] = user
 
