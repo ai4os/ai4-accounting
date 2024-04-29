@@ -9,6 +9,7 @@ import re
 import types
 
 import nomad
+import requests
 
 import nomad_patches
 
@@ -36,9 +37,14 @@ Nomad.job.get_evaluations = types.MethodType(
 snapshot_dir = Path(__file__).resolve().parent / 'snapshots'
 
 
+# Persistent requests session for faster requests
+session = requests.Session()
+
+
 def get_deployment(
     deployment_uuid: str,
     namespace: str,
+    full_info: bool = False,
     ):
     """
     Retrieve the info of a specific deployment.
@@ -127,6 +133,17 @@ def get_deployment(
 
     except Exception:  # return first endpoint
         info['main_endpoint'] = list(info['endpoints'].values())[0]
+
+    # Add active endpoints
+    if full_info:
+        info['active_endpoints'] = []
+        for k, v in info['endpoints'].items():
+            try:
+                r = session.get(v, timeout=2)
+                if r.status_code == 200:
+                    info['active_endpoints'].append(k)
+            except requests.exceptions.Timeout:
+                continue
 
     # Only fill resources if the job is allocated
     allocs = Nomad.job.get_allocations(
