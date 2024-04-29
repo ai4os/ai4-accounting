@@ -134,17 +134,6 @@ def get_deployment(
     except Exception:  # return first endpoint
         info['main_endpoint'] = list(info['endpoints'].values())[0]
 
-    # Add active endpoints
-    if full_info:
-        info['active_endpoints'] = []
-        for k, v in info['endpoints'].items():
-            try:
-                r = session.get(v, timeout=2)
-                if r.status_code == 200:
-                    info['active_endpoints'].append(k)
-            except requests.exceptions.Timeout:
-                continue
-
     # Only fill resources if the job is allocated
     allocs = Nomad.job.get_allocations(
         id_=j['ID'],
@@ -214,10 +203,6 @@ def get_deployment(
                 "the network is restored and you should be able to fully recover " \
                 "your deployment."
 
-        # Disable access to endpoints if there is a network cut
-        if info['status'] == 'down' and info['active_endpoints']:
-            info['active_endpoints'] = []
-
         # Add resources
         res = a['AllocatedResources']['Tasks']['usertask']
         gpu = [d for d in res['Devices'] if d['Type'] == 'gpu'][0] if res['Devices'] else None
@@ -229,6 +214,26 @@ def get_deployment(
             'memory_MB': res['Memory']['MemoryMB'],
             'disk_MB': a['AllocatedResources']['Shared']['DiskMB'],
         }
+
+        # Retrieve the node the jobs landed at in order to properly fill the endpoints
+        n = Nomad.node.get_node(a['NodeID'])
+        for k, v in info['endpoints'].items():
+            info['endpoints'][k] = v.replace('${meta.domain}', n['Meta']['domain'])
+
+        # Add active endpoints
+        if full_info:
+            info['active_endpoints'] = []
+            for k, v in info['endpoints'].items():
+                try:
+                    r = session.get(v, timeout=2)
+                    if r.status_code == 200:
+                        info['active_endpoints'].append(k)
+                except requests.exceptions.Timeout:
+                    continue
+
+        # Disable access to endpoints if there is a network cut
+        if info['status'] == 'down' and info['active_endpoints']:
+            info['active_endpoints'] = []
 
     elif evals:
         # Something happened, job didn't deploy (eg. job needs port that's currently being used)
