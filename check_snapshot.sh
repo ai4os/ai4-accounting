@@ -5,10 +5,10 @@
 # 0 0 * * * /bin/bash /mnt/ai4-logs/ai4-accounting/check_snapshot.sh
 
 # Backups directory
-backup_dir="/mnt/ai4os-logs/ai4-accounting/snapshots"
+backup_dir="/home/ubuntu/ai4-accounting/snapshots"
 
 # File with last backup name
-last_backup_file="/etc/.last_backup.txt"
+last_backup_file="/home/ubuntu/ai4-accounting/.last_backup.txt"
 
 if [[ ! -f "$last_backup_file" ]]; then
     touch "$last_backup_file"

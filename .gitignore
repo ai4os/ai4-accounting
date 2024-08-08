@@ -4,7 +4,6 @@ __pycache__/
 
 # C extensions
 *.so
-
 # Distribution / packaging
 .Python
 env/
@@ -139,3 +138,12 @@ GTAGS
 *.zip
 *.pkl
 *.npz
+
+
+## NOT STANDARD FILES! ##
+
+#####################
+# App ignored files #
+#####################
+
+.last_backup.txt
