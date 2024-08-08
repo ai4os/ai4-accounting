@@ -64,6 +64,7 @@ def get_deployment(
     # Create job info dict
     info = {
         'job_ID': j['ID'],
+        'name': j['Name'],
         'status': '',  # do not use j['Status'] as misleading
         'owner': j['Meta']['owner'],
         'title': j['Meta']['title'],
@@ -83,7 +84,7 @@ def get_deployment(
 
     # Retrieve tasks
     tasks = j['TaskGroups'][0]['Tasks']
-    usertask = [t for t in tasks if t['Name'] == 'usertask'][0]
+    usertask = [t for t in tasks if t['Name'] == 'main'][0]
 
     # Retrieve Docker image
     info['docker_image'] = usertask['Config']['image']
@@ -133,17 +134,6 @@ def get_deployment(
 
     except Exception:  # return first endpoint
         info['main_endpoint'] = list(info['endpoints'].values())[0]
-
-    # Add active endpoints
-    if full_info:
-        info['active_endpoints'] = []
-        for k, v in info['endpoints'].items():
-            try:
-                r = session.get(v, timeout=2)
-                if r.status_code == 200:
-                    info['active_endpoints'].append(k)
-            except requests.exceptions.Timeout:
-                continue
 
     # Only fill resources if the job is allocated
     allocs = Nomad.job.get_allocations(
@@ -198,7 +188,7 @@ def get_deployment(
 
         # Add error messages if needed
         if info['status'] == 'failed':
-            info['error_msg'] = a['TaskStates']['usertask']['Events'][0]['Message']
+            info['error_msg'] = a['TaskStates']['main']['Events'][0]['Message']
 
             # Replace with clearer message
             if info['error_msg'] == 'Docker container exited with non-zero exit code: 1':
@@ -214,12 +204,8 @@ def get_deployment(
                 "the network is restored and you should be able to fully recover " \
                 "your deployment."
 
-        # Disable access to endpoints if there is a network cut
-        if info['status'] == 'down' and info['active_endpoints']:
-            info['active_endpoints'] = []
-
         # Add resources
-        res = a['AllocatedResources']['Tasks']['usertask']
+        res = a['AllocatedResources']['Tasks']['main']
         gpu = [d for d in res['Devices'] if d['Type'] == 'gpu'][0] if res['Devices'] else None
         cpu_cores = res['Cpu']['ReservedCores']
         info['resources'] = {
@@ -229,6 +215,26 @@ def get_deployment(
             'memory_MB': res['Memory']['MemoryMB'],
             'disk_MB': a['AllocatedResources']['Shared']['DiskMB'],
         }
+
+        # Retrieve the node the jobs landed at in order to properly fill the endpoints
+        n = Nomad.node.get_node(a['NodeID'])
+        for k, v in info['endpoints'].items():
+            info['endpoints'][k] = v.replace('${meta.domain}', n['Meta']['domain'])
+
+        # Add active endpoints
+        if full_info:
+            info['active_endpoints'] = []
+            for k, v in info['endpoints'].items():
+                try:
+                    r = session.get(v, timeout=2)
+                    if r.status_code == 200:
+                        info['active_endpoints'].append(k)
+                except requests.exceptions.Timeout:
+                    continue
+
+        # Disable access to endpoints if there is a network cut
+        if info['status'] == 'down' and info['active_endpoints']:
+            info['active_endpoints'] = []
 
     elif evals:
         # Something happened, job didn't deploy (eg. job needs port that's currently being used)
@@ -259,8 +265,8 @@ def get_deployment(
 
     # Add allocation start and end
     if allocs:
-        info['alloc_start'] = a['TaskStates']['usertask']['StartedAt']
-        info['alloc_end'] = a['TaskStates']['usertask']['FinishedAt']
+        info['alloc_start'] = a['TaskStates']['main']['StartedAt']
+        info['alloc_end'] = a['TaskStates']['main']['FinishedAt']
 
     # Dead jobs should have dead state, otherwise status will be misleading (for example)
     if j['Status'] == 'dead':
@@ -286,7 +292,7 @@ if __name__ == "__main__":
 
             # Skip jobs that do not start with userjob
             # (useful for admins who might have deployed other jobs eg. Traefik)
-            if not j['Name'].startswith('userjob'):
+            if not (j['Name'].startswith('module') or j['Name'].startswith('tool-fl')):
                 continue
 
             try:
@@ -297,7 +303,7 @@ if __name__ == "__main__":
                         namespace=namespace,
                         )
                     )
-            except Exception:
+            except Exception as e:
                 print(f"   Failed to retrieve {j['ID']}")
 
     # Save snapshot
