@@ -50,6 +50,12 @@ def main(
                 if job['status'] == 'dead' and not job['alloc_start']:
                     continue
 
+                # Ignore running jobs that do not have alloc start
+                # Weird case, but can happen
+                if job['status'] == 'running' and not job['alloc_start']:
+                    print(f"{snapshot_dt} Ignoring running with no alloc start")
+                    continue
+
                 # Older jobs where misconfigured (cpuMHz was set instead of cpu_cores)
                 #TODO: remove when old jobs no longer exist
                 if job['resources']['cpu_num'] == 0:
