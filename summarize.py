@@ -38,7 +38,7 @@ others = [
 df = {k: [] for k in others + resources}
 
 # Iterate over snapshots
-namespaces = ['ai4eosc', 'imagine']
+namespaces = ['ai4eosc', 'imagine', 'ai4life']
 for snapshot_pth in sorted(snapshot_dir.glob('**/*.json')):
 
     snapshot_dt = datetime.strptime(snapshot_pth.stem, '%Y-%m-%dT%H:%M:%S')
@@ -48,7 +48,7 @@ for snapshot_pth in sorted(snapshot_dir.glob('**/*.json')):
         snapshot = json.load(f)
 
     for namespace in namespaces:
-        for job in snapshot[namespace]:
+        for job in snapshot.get(namespace, []):
 
             # Ignore queued jobs, error jobs, etc
             if (job['status'] not in ['running', 'queued']):
@@ -80,7 +80,7 @@ for snapshot_pth in sorted(snapshot_dir.glob('**/*.json')):
         # If the snapshot exists, but there were not jobs running/queued, resources
         # should be set to zero in order to not skip that timestamp in the time series
         # We should only skip the timestamp if the snapshot wasn't taken.
-        if not snapshot[namespace]:
+        if not snapshot.get(namespace, []):
             df['date'].append(snapshot_pth.stem)
             df['namespace'].append(namespace)
             df['status'].append(None)
@@ -142,14 +142,16 @@ stats_user = stats_user.reset_index(level=1)  # move 'owner' to column
 for namespace in namespaces:
 
     # Per user
-    stats_user.loc[namespace].to_csv(
+    # Use double bracket in loc to avoid collapsing DataFrame to a Series if we only
+    # have one user
+    stats_user.loc[[namespace]].to_csv(
         summary_dir / f'{namespace}-users-agg.csv',
         sep=';',
         index=False,
         )
 
     # For the whole namespace
-    ns_agg = stats_user.loc[namespace].sum(
+    ns_agg = stats_user.loc[[namespace]].sum(
         axis='rows',
         numeric_only=True,
         ).to_frame().T

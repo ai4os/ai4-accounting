@@ -14,7 +14,7 @@ users = pd.read_csv(
     sep=';',
 )
 
-for namespace in ['ai4eosc', 'imagine']:
+for namespace in ['ai4eosc', 'imagine', 'ai4life']:
     stats = pd.read_csv(
         summary_dir / f'{namespace}-users-agg.csv',
         sep=';',

@@ -281,7 +281,7 @@ if __name__ == "__main__":
 
     print("Taking snapshot of the Nomad cluster")
 
-    namespaces = ['ai4eosc', 'imagine']
+    namespaces = ['ai4eosc', 'imagine', 'ai4life']
     snapshot = {k: [] for k in namespaces}
     for namespace in namespaces:
 

@@ -18,7 +18,7 @@ def main(
     end_date: str,
     ):
 
-    namespaces = ['ai4eosc', 'imagine']
+    namespaces = ['ai4eosc', 'imagine', 'ai4life']
     accounting ={k: {} for k in namespaces}
 
     # Transform to datetimes
@@ -117,7 +117,7 @@ def main(
 if __name__ == "__main__":
 
     typer.run(main)
-    
+
     # main(
     #     ini_date='2024-03-01',
     #     end_date = '2024-08-31',

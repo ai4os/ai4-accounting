@@ -14,7 +14,7 @@ main_dir = Path.cwd()
 html_dir = main_dir / 'htmls'
 summary_dir = main_dir / 'summaries'
 
-namespaces = ['ai4eosc', 'imagine']
+namespaces = ['ai4eosc', 'imagine', 'ai4life']
 labels = {
     'cpu_num': 'CPU cores',
     'cpu_MHz': 'CPU frequency (MHz)',
