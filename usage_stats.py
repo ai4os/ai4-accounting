@@ -14,20 +14,25 @@ snapshot_dir = Path(__file__).resolve().parent / 'snapshots'
 
 
 def main(
-    ini_date: str,
-    end_date: str,
+    ini_date: str = None,
+    end_date: str = None,
     ):
 
     namespaces = ['ai4eosc', 'imagine', 'ai4life']
     accounting ={k: {} for k in namespaces}
 
+    snapshot_list = sorted(snapshot_dir.glob('**/*.json'))
+
     # Transform to datetimes
-    ini_dt = datetime.strptime(ini_date,'%Y-%m-%d')
-    end_dt = datetime.strptime(end_date,'%Y-%m-%d')
+    # Use user values or else default to first/last snapshots
+    ini_dt = datetime.strptime(ini_date,'%Y-%m-%d') if ini_date \
+        else datetime.strptime(snapshot_list[0].stem, '%Y-%m-%dT%H:%M:%S')
+    end_dt = datetime.strptime(end_date,'%Y-%m-%d') if end_date \
+        else datetime.strptime(snapshot_list[-1].stem, '%Y-%m-%dT%H:%M:%S')
 
     prev_snapshot_dt = deepcopy(ini_dt)  # datetime of last snapshot; starts at ini_date
 
-    for snapshot_pth in sorted(snapshot_dir.glob('**/*.json')):
+    for snapshot_pth in snapshot_list:
 
         snapshot_dt = datetime.strptime(snapshot_pth.stem, '%Y-%m-%dT%H:%M:%S')
 
@@ -40,7 +45,7 @@ def main(
             snapshot = json.load(f)
 
         for namespace in namespaces:
-            for job in snapshot[namespace]:
+            for job in snapshot.get(namespace, []):
 
                 # Ignore queued jobs, error jobs, etc
                 if job['status'] not in ['running', 'dead']:
@@ -95,7 +100,7 @@ def main(
     for namespace in namespaces:
 
         table = rich.table.Table(
-            title=f"{namespace.upper()} accounting for the period {ini_date}:{end_date}",
+            title=f"{namespace.upper()} accounting for the period {ini_dt.date()}:{end_dt.date()}",
             show_header=False,
         )
 
