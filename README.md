@@ -76,14 +76,14 @@ python summarize.py
 python interactive_plot.py
 ```
 
-**Note**: Both (1) `summarize.py` and (2) `usage_stats` provide summaries of VO usage.
-But (2) is more precise because:
+**Note**: Both (1) `usage_stats` and (2) `summarize.py` provide summaries of VO usage.
+But (1) is _more precise_ because:
 
-* (1) averages the usage as a mean of the 6 daily snapshots, not taking into account the
-  start/end exact datetimes of each deployment like (2) does.
+* (2) averages the usage as a mean of the 6 daily snapshots, not taking into account the
+  start/end exact datetimes of each deployment like (1) does.
 
-* if we missed snapshots (even if the cluster was still working) during a complete day
-  (2) will appear as if that day didn't consumed resources in (2) while (1) correctly
+* if we missed snapshots (even if the cluster was still working) during a complete day,
+  (2) will appear as if that day didn't consumed resources while (1) correctly
   accounts for it.
 
 * to convert back from resource/day (2) to resource/hour (1) you have to estimate how many
