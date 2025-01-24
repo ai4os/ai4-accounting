@@ -122,8 +122,3 @@ def main(
 if __name__ == "__main__":
 
     typer.run(main)
-
-    # main(
-    #     ini_date='2024-03-01',
-    #     end_date = '2024-08-31',
-    # )

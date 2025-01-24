@@ -40,7 +40,8 @@ bash take_snapshot.sh
 ```
 (make sure to adapt the paths in the bash script)
 
-You can generate stats for the accounting reports with the intended start and end dates:
+You can generate stats for the accounting reports with the intended start and end dates
+(_the end date is not included!_):
 
 ```bash
 source ./myenv/bin/activate
@@ -75,9 +76,24 @@ python summarize.py
 python interactive_plot.py
 ```
 
+**Note**: Both (1) `summarize.py` and (2) `usage_stats` provide summaries of VO usage.
+But (2) is more precise because:
+
+* (1) averages the usage as a mean of the 6 daily snapshots, not taking into account the
+  start/end exact datetimes of each deployment like (2) does.
+
+* if we missed snapshots (even if the cluster was still working) during a complete day
+  (2) will appear as if that day didn't consumed resources in (2) while (1) correctly
+  accounts for it.
+
+* to convert back from resource/day (2) to resource/hour (1) you have to estimate how many
+  hours on average the cluster has been running per day (which is less than 24hs because
+  of the takedowns). So simply multiplying (2) by 24 tends to overestimate the real
+  numbers provided by (1).
+  This effect can be observed by taking a small window around a cluster takedown, eg. 2024-12-02.
+
 > :warning: Due to some side issues, CPU frequency is not very reliable around Sep 2023,
 > though it will keep getting more accurate with time.
-
 
 In addition, we keep a json database of users that can be updated using:
 

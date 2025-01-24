@@ -74,6 +74,10 @@ def main(
                 if (job['status'] not in ['running', 'queued']):
                     continue
 
+                # If job is running but has no `alloc_start` let's count it as queued
+                if job['status'] == 'running' and not job.get('alloc_start'):
+                    job['status'] = 'queued'
+
                 # Add variables
                 df['date'].append(snapshot_pth.stem)
                 df['namespace'].append(namespace)
@@ -113,6 +117,10 @@ def main(
     df = pd.DataFrame.from_dict(df)
     df["date"] = pd.to_datetime(df["date"])
 
+    ####################################################################################
+    # Generate timeseries                                                              #
+    ####################################################################################
+
     # Generate namespace time series
     stats_ns = df.groupby(['date', 'namespace']).sum()  # average jobs inside the same snapshot
     stats_ns = stats_ns.reset_index(level=0)  # move 'date' to column
@@ -149,12 +157,37 @@ def main(
             index=False,
             )
 
-    # Aggregated user stats per namespace (in resource-day; eg. GPU-day)
+    ####################################################################################
+    # Aggregate user stats per namespace (in resource-day; eg. GPU-day)                #
+    ####################################################################################
+
+    # Create a dict that groups all the snapshot that took place in a given date
+    # We will use it later to perform the daily means of resources
+    date_hours = sorted(set(df['date']))
+    date_map = {}
+    for date_hour in date_hours:
+        k = date_hour.date()
+        v = date_map.get(k, [])
+        date_map[k] = v + [date_hour]
+
+    # Start aggregating
     stats_user = deepcopy(df)
     stats_user = stats_user.groupby(['date', 'namespace', 'owner']).sum()  # aggregate inside hourly snapshots
     stats_user = stats_user.reset_index(level=0)  # move 'date' to column
     stats_user['date'] = stats_user['date'].dt.date  # remove hours
-    stats_user = stats_user.groupby(['date', 'namespace', 'owner']).mean()  # daily mean across hourly snapshots
+
+    # Perform the daily mean manually
+    # Before we did [1]. But the problem if that it biases the measures because the
+    # hours where a user have no deployments don't appear as rows in the table with cpu_num = 0.
+    # The row simply does not exist. So when you take the mean you are not taking into
+    # the empty hours, therefore you are constantly overestimating usage. To avoid this we do the
+    # mean manually by dividing the sum by the real number of snapshots that were taken that day.
+    # [1]: stats_user.groupby(['date', 'namespace', 'owner']).mean()
+    stats_user = stats_user.groupby(['date', 'namespace', 'owner']).sum()
+    stats_user['snapshot_num'] = stats_user.index.get_level_values('date').map(lambda x: len(date_map[x]))
+    stats_user = stats_user.div(stats_user['snapshot_num'], axis=0)
+    stats_user = stats_user.drop(columns=['snapshot_num'])
+
     stats_user = stats_user.groupby(['namespace', 'owner']).sum()  # aggregate days
     stats_user = stats_user.round(0).astype(int)  # round to int
     stats_user = stats_user.reset_index(level=1)  # move 'owner' to column
