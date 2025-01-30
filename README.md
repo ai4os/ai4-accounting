@@ -41,7 +41,7 @@ bash take_snapshot.sh
 (make sure to adapt the paths in the bash script)
 
 You can generate stats for the accounting reports with the intended start and end dates
-(_the end date is not included!_):
+(both included):
 
 ```bash
 source ./myenv/bin/activate
@@ -76,22 +76,6 @@ python summarize.py
 python interactive_plot.py
 ```
 
-**Note**: Both (1) `usage_stats` and (2) `summarize.py` provide summaries of VO usage.
-But (1) is _more precise_ because:
-
-* (2) averages the usage as a mean of the 6 daily snapshots, not taking into account the
-  start/end exact datetimes of each deployment like (1) does.
-
-* if we missed snapshots (even if the cluster was still working) during a complete day,
-  (2) will appear as if that day didn't consumed resources while (1) correctly
-  accounts for it.
-
-* to convert back from resource/day (2) to resource/hour (1) you have to estimate how many
-  hours on average the cluster has been running per day (which is less than 24hs because
-  of the takedowns). So simply multiplying (2) by 24 tends to overestimate the real
-  numbers provided by (1).
-  This effect can be observed by taking a small window around a cluster takedown, eg. 2024-12-02.
-
 > :warning: Due to some side issues, CPU frequency is not very reliable around Sep 2023,
 > though it will keep getting more accurate with time.
 
@@ -109,3 +93,33 @@ You can merge the summary user stats with the user database, using:
 python merge-userdb-stats.py
 ```
 and this will create a file `summaries/***-users-agg-merged.csv`.
+
+
+### Implementation notes
+
+#### `usage_stats` vs `summarize`
+
+Both (1) `usage_stats` and (2) `summarize.py` provide summaries of VO usage.
+But (1) is _more precise_ because:
+
+* (2) averages the usage as a mean of the 6 daily snapshots, not taking into account the
+  start/end exact datetimes of each deployment like (1) does.
+
+* if we missed snapshots (even if the cluster was still working) during a complete day,
+  (2) will appear as if that day didn't consumed resources while (1) correctly
+  accounts for it.
+
+* to convert back from resource/day (2) to resource/hour (1) you have to estimate how many
+  hours on average the cluster has been running per day (which is less than 24hs because
+  of the takedowns). So simply multiplying (2) by 24 tends to overestimate the real
+  numbers provided by (1).
+  This effect can be observed by taking a small window around a cluster takedown, eg. 2024-12-02.
+
+
+#### `summarize` implementation
+
+Each row in the `summarize` dataframe is a deployment status _at a given snapshot time_.
+An alternative, that would create smaller dataframes, is to merge all the info and have one row per deployment. Those rows would have a `initial_date` and `final_date`.
+And potentially we could regenerate the time series by filtering by dates.
+
+The problem is that those dates are not unique because it happens that a single deployment cycles through the same status (eg. `queued` --> `running` --> `dead` --> `running` --> `dead`). So there's not an unique `initial_date`. Therefore having rows with a deployment status _at a given snapshot time_ better reflects this behaviour.

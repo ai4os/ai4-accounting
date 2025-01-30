@@ -29,6 +29,7 @@ def main(
         else datetime.strptime(snapshot_list[0].stem, '%Y-%m-%dT%H:%M:%S')
     end_dt = datetime.strptime(end_date,'%Y-%m-%d') if end_date \
         else datetime.strptime(snapshot_list[-1].stem, '%Y-%m-%dT%H:%M:%S')
+    end_dt = end_dt.replace(hour=23, minute=59, second=59)  # include end_dt in the range
 
     prev_snapshot_dt = deepcopy(ini_dt)  # datetime of last snapshot; starts at ini_date
 
