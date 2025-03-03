@@ -90,10 +90,10 @@ def main(
         # Update snapshot time
         prev_snapshot_dt = snapshot_dt
 
-    # Convert resource to resource/hr
+    # Convert from resource-seconds to resource-hour
     for namespace in namespaces:
         for k in accounting[namespace].copy().keys():
-            accounting[namespace][f'{k}/hr'] = int(accounting[namespace].pop(k) / 3600)
+            accounting[namespace][f'{k} hours'] = int(accounting[namespace].pop(k) / 3600)
 
     # Print pretty report
     console = rich.console.Console(record=True)
