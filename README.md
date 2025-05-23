@@ -58,9 +58,6 @@ python summarize.py
 python interactive_plot.py
 ```
 
-> :warning: Due to some side issues, CPU frequency is not very reliable around Sep 2023,
-> though it will keep getting more accurate with time.
-
 In addition, we keep a json database of users that can be updated using:
 
 ```bash
@@ -126,3 +123,14 @@ An alternative, that would create smaller dataframes, is to merge all the info a
 And potentially we could regenerate the time series by filtering by dates.
 
 The problem is that those dates are not unique because it happens that a single deployment cycles through the same status (eg. `queued` --> `running` --> `dead` --> `running` --> `dead`). So there's not an unique `initial_date`. Therefore having rows with a deployment status _at a given snapshot time_ better reflects this behaviour.
+
+
+## Known issues
+
+* Due to some side issues, CPU frequency is not very reliable around Sep 2023.
+* Due to a code bug, deployments of some tools were not tracked:
+  - CVAT: not tracked in period [2024/11/13-2025/05/23]
+  - AI4Life loader: not tracked in period [2025/01/29-2025/05/23]
+  - LLM: not tracked in period [2025/03/03-2025/05/23]
+  - DevEnv: not tracked in period [2025/04/04-2025/05/23]
+  - NVFlare: not tracked in period [2025/04/07-2025/05/23]
