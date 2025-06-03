@@ -33,6 +33,9 @@ def main(
 
     prev_snapshot_dt = deepcopy(ini_dt)  # datetime of last snapshot; starts at ini_date
 
+    # Keep track of ignored misformated jobs
+    ignored = set()
+
     for snapshot_pth in snapshot_list:
 
         snapshot_dt = datetime.strptime(snapshot_pth.stem, '%Y-%m-%dT%H:%M:%S')
@@ -56,10 +59,20 @@ def main(
                 if job['status'] == 'dead' and not job['alloc_start']:
                     continue
 
+                # Ignore dead jobs that are badly formatted
+                # Weird case, but can happen
+                if job['status'] == 'dead' and  not job['alloc_end']:
+                    if job['job_ID'] not in ignored:
+                        print(f"{snapshot_dt.date()} Ignoring: dead with no alloc end (ID: {job['job_ID']})")
+                        ignored.add(job['job_ID'])
+                    continue
+
                 # Ignore running jobs that do not have alloc start
                 # Weird case, but can happen
                 if job['status'] == 'running' and not job['alloc_start']:
-                    print(f"{snapshot_dt} Ignoring running with no alloc start")
+                    if job['job_ID'] not in ignored:
+                        print(f"{snapshot_dt.date()} Ignoring: running with no alloc start (ID: {job['job_ID']})")
+                        ignored.add(job['job_ID'])
                     continue
 
                 # Older jobs where misconfigured (cpuMHz was set instead of cpu_cores)
