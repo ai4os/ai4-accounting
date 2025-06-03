@@ -131,7 +131,7 @@ def main(
             table.add_row(k, str(v))
 
         table.add_row('Nº jobs', str(len(jobset[namespace])))
-        table.add_row('Nº users', str(len(userset[namespace])))
+        table.add_row('Nº active users', str(len(userset[namespace])))
 
         console.print(table, soft_wrap=True)
         # print(console.export_html())
@@ -147,7 +147,7 @@ def main(
         v = sum([accounting[n][res] for n in namespaces])
         table.add_row(res, str(v))
     table.add_row('Nº jobs', str(sum([len(s) for s in jobset.values()])))
-    table.add_row('Nº users', str(len(set.union(*userset.values()))))
+    table.add_row('Nº active users', str(len(set.union(*userset.values()))))
     console.print(table, soft_wrap=True)
 
 
