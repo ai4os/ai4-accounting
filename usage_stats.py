@@ -19,7 +19,9 @@ def main(
     ):
 
     namespaces = ['ai4eosc', 'imagine', 'ai4life']
-    accounting ={k: {} for k in namespaces}
+    accounting = {k: {} for k in namespaces}
+    jobset = {k: set() for k in namespaces}  # keep track of number of jobs per namespace
+    userset = {k: set() for k in namespaces}  # keep track of number of jobs per namespace
 
     snapshot_list = sorted(snapshot_dir.glob('**/*.json'))
 
@@ -100,6 +102,10 @@ def main(
                 for k, v in job['resources'].items():
                     accounting[namespace][k] = accounting[namespace].get(k, 0) + v * seconds
 
+                # Track job and user
+                jobset[namespace].add(job['job_ID'])
+                userset[namespace].add(job['owner'])
+
         # Update snapshot time
         prev_snapshot_dt = snapshot_dt
 
@@ -123,6 +129,9 @@ def main(
 
         for k, v in accounting[namespace].items():
             table.add_row(k, str(v))
+
+        table.add_row('Nº jobs', str(len(jobset[namespace])))
+        table.add_row('Nº users', str(len(userset[namespace])))
 
         console.print(table, soft_wrap=True)
         # print(console.export_html())
