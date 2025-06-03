@@ -136,11 +136,20 @@ def main(
         console.print(table, soft_wrap=True)
         # print(console.export_html())
 
-    #TODO: remove when old jobs no longer exist
-    console.print(
-        "[orange1][b]Warning[not b][not orange1] cpu_MHz numbers might be unreliable due to old jobs " \
-        "being misconfigured",
+    # Show table for aggregate of all namespaces
+    table = rich.table.Table(
+        title=f"Aggregated accounting for the period {ini_dt.date()}:{end_dt.date()}",
+        show_header=False,
     )
+    table.add_column("Resources", justify="right", style="cyan")
+    table.add_column("", justify="right", style="pink1")
+    for res in list(accounting.values())[0].keys():
+        v = sum([accounting[n][res] for n in namespaces])
+        table.add_row(res, str(v))
+    table.add_row('Nº jobs', str(sum([len(s) for s in jobset.values()])))
+    table.add_row('Nº users', str(len(set.union(*userset.values()))))
+    console.print(table, soft_wrap=True)
+
 
 if __name__ == "__main__":
 
