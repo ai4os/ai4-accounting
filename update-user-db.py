@@ -38,9 +38,10 @@ for namespace in namespaces:
     jobs = Nomad.jobs.get_jobs(namespace=namespace)  # job summaries
     for j in jobs:
 
-        # Skip jobs that do not start with userjob
+        # Skip jobs that are not modules or tools
         # (useful for admins who might have deployed other jobs eg. Traefik)
-        if not j['Name'].startswith('userjob'):
+        if not (j['Name'].startswith('module-') or j['Name'].startswith('tool-')):
+            print(f"Ignoring {j['Name']}")
             continue
 
         try:
@@ -48,20 +49,14 @@ for namespace in namespaces:
                 id_=j['ID'],
                 namespace=namespace,
             )
-            user_id = j['Meta']['owner']
 
-            # Ignore job if user is already present in the database and it's user info
-            # is complete
-            if user_id in users and all(users[user_id].values()):
-                continue
-
-            # Add new info if available and wasn't defined previously
-            # (we don't overwrite existing info)
-            user = users.get(user_id, {})
+            # Overwrite user info in database
+            id_ = j['Meta']['owner']
+            user = users.get(id_, {})
             for k in keys:
-                if (f'owner_{k}' in j['Meta']) and (k not in user.keys()):
+                if (f'owner_{k}' in j['Meta']):
                     user[k] = j['Meta'][f'owner_{k}']
-            users[user_id] = user
+            users[id_] = user
 
         except Exception:
             print(f"   Failed to retrieve {j['ID']}")
