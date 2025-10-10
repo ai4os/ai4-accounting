@@ -13,52 +13,50 @@ import conf
 
 
 main_dir = Path.cwd()
-html_dir = main_dir / 'htmls'
-summary_dir = main_dir / 'summaries'
+html_dir = main_dir / "htmls"
+summary_dir = main_dir / "summaries"
 
 labels = {
-    'cpu_num': 'CPU cores',
-    'cpu_MHz': 'CPU frequency (MHz)',
-    'memory_MB': 'RAM memory (MB)',
-    'disk_MB': 'Disk memory (MB)',
-    'gpu_num': ' Number of GPUs',
-    'running': 'Jobs running',
-    'queued': 'Jobs queued',
+    "cpu_num": "CPU cores",
+    "cpu_MHz": "CPU frequency (MHz)",
+    "memory_MB": "RAM memory (MB)",
+    "disk_MB": "Disk memory (MB)",
+    "gpu_num": " Number of GPUs",
+    "running": "Jobs running",
+    "queued": "Jobs queued",
 }
 
 # Load html template
-with open(html_dir / 'template.html', 'r') as f:
+with open(html_dir / "template.html", "r") as f:
     html_template = Template(f.read())
 
 # Generate plots
 for namespace in conf.NAMESPACES:
-
     df = pd.read_csv(
-        summary_dir / f'{namespace}-timeseries.csv',
-        sep=';',
+        summary_dir / f"{namespace}-timeseries.csv",
+        sep=";",
     )
 
-    with open(html_dir / f'{namespace}.html', 'w') as f:
-
+    with open(html_dir / f"{namespace}.html", "w") as f:
         html = deepcopy(html_template)
         divs = {}
 
         for k in labels.keys():
-
             fig = px.area(
-                x=df['date'],
+                x=df["date"],
                 y=df[k],
                 title=labels[k],
                 labels={
-                    'x': 'Dates',
+                    "x": "Dates",
                     # 'y': labels[k],
-                    'y': '',
+                    "y": "",
                 },
-                width=800, height=400,
+                width=800,
+                height=400,
             )
             divs[k] = fig.to_html(  # retrieve html code of the plot
                 full_html=False,
-                include_plotlyjs='cdn',
-                )
+                include_plotlyjs="cdn",
+            )
 
         f.write(html.safe_substitute(divs))  # replace in template
