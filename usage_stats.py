@@ -9,6 +9,8 @@ from pathlib import Path
 import rich
 import typer
 
+import conf
+
 
 snapshot_dir = Path(__file__).resolve().parent / 'snapshots'
 
@@ -18,7 +20,7 @@ def main(
     end_date: str = None,
     ):
 
-    namespaces = ['ai4eosc', 'imagine', 'ai4life']
+    namespaces = conf.NAMESPACES
     accounting = {k: {} for k in namespaces}
     jobset = {k: set() for k in namespaces}  # keep track of number of jobs per namespace
     userset = {k: set() for k in namespaces}  # keep track of number of jobs per namespace

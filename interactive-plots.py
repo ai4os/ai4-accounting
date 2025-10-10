@@ -9,12 +9,13 @@ from string import Template
 import pandas as pd
 import plotly.express as px
 
+import conf
+
 
 main_dir = Path.cwd()
 html_dir = main_dir / 'htmls'
 summary_dir = main_dir / 'summaries'
 
-namespaces = ['ai4eosc', 'imagine', 'ai4life']
 labels = {
     'cpu_num': 'CPU cores',
     'cpu_MHz': 'CPU frequency (MHz)',
@@ -30,7 +31,7 @@ with open(html_dir / 'template.html', 'r') as f:
     html_template = Template(f.read())
 
 # Generate plots
-for namespace in namespaces:
+for namespace in conf.NAMESPACES:
 
     df = pd.read_csv(
         summary_dir / f'{namespace}-timeseries.csv',

@@ -13,6 +13,8 @@ from pathlib import Path
 import pandas as pd
 import typer
 
+import conf
+
 
 main_dir = Path(__file__).resolve().parent
 snapshot_dir =  main_dir / 'snapshots'
@@ -55,7 +57,7 @@ def main(
     df = {k: [] for k in others + resources}
 
     # Iterate over snapshots
-    namespaces = ['ai4eosc', 'imagine', 'ai4life']
+    namespaces = conf.NAMESPACES
     for snapshot_pth in snapshot_list:
 
         snapshot_dt = datetime.strptime(snapshot_pth.stem, '%Y-%m-%dT%H:%M:%S')
@@ -194,25 +196,35 @@ def main(
     stats_user = stats_user.reset_index(level=1)  # move 'owner' to column
 
     for namespace in namespaces:
-
-        # Per user
-        # Use double bracket in loc to avoid collapsing DataFrame to a Series if we only
-        # have one user
-        stats_user.loc[[namespace]].to_csv(
-            summary_dir / f'{namespace}-users-agg.csv',
-            sep=';',
-            index=False,
+        if namespace in stats_user.index:
+            # Per user
+            # Use double bracket in loc to avoid collapsing DataFrame to a Series if we
+            # only have one user
+            stats_user.loc[[namespace]].to_csv(
+                summary_dir / f"{namespace}-users-agg.csv", sep=";", index=False
             )
 
-        # For the whole namespace
-        ns_agg = stats_user.loc[[namespace]].sum(
-            axis='rows',
-            numeric_only=True,
-            ).to_frame().T
-        ns_agg.to_csv(
-            summary_dir / f'{namespace}-full-agg.csv',
-            sep=';',
-            index=False
+            # For the whole namespace
+            ns_agg = (
+                stats_user.loc[[namespace]]
+                .sum(axis="rows", numeric_only=True)
+                .to_frame()
+                .T
+            )
+            ns_agg.to_csv(
+                summary_dir / f"{namespace}-full-agg.csv", sep=";", index=False
+            )
+        else:
+            # The namespace is does not exists (maybe new namespace that was created
+            # and no user still has used it)
+            empty_df = pd.DataFrame(columns=stats_user.columns)
+            empty_df.to_csv(
+                summary_dir / f"{namespace}-users-agg.csv", sep=";", index=False
+            )
+
+            zeros_df = pd.DataFrame([{col: 0 for col in stats_user.columns}])
+            zeros_df.to_csv(
+                summary_dir / f"{namespace}-full-agg.csv", sep=";", index=False
             )
 
 

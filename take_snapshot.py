@@ -11,6 +11,7 @@ import types
 import nomad
 import requests
 
+import conf
 import nomad_patches
 
 
@@ -322,7 +323,7 @@ def get_deployment(
 if __name__ == "__main__":
     print("Taking snapshot of the Nomad cluster")
 
-    namespaces = ["ai4eosc", "imagine", "ai4life"]
+    namespaces = conf.NAMESPACES
     snapshot = {k: [] for k in namespaces}
     for namespace in namespaces:
         print(f"  Processing {namespace} ...")

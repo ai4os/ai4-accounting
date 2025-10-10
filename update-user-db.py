@@ -8,6 +8,8 @@ from pathlib import Path
 import nomad
 import pandas as pd
 
+import conf
+
 # Disable insecure requests warning
 import warnings
 warnings.filterwarnings("ignore")
@@ -29,7 +31,7 @@ else:
 
 # Parse current deployments and add new users
 Nomad = nomad.Nomad()
-namespaces = ['ai4eosc', 'imagine', 'ai4life']
+namespaces = conf.NAMESPACES
 snapshot = {k: [] for k in namespaces}
 for namespace in namespaces:
 
