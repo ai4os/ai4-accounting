@@ -4,6 +4,11 @@ Common configuration for all files.
 
 import nomad
 
+# Disable insecure requests warning
+import warnings
+
+warnings.filterwarnings("ignore")
+
 
 # Automatically retrieve all namespaces from Nomad
 Nomad = nomad.Nomad()
