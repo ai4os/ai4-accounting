@@ -64,7 +64,7 @@ for namespace in namespaces:
 
 # Save new database to JSON
 with open(json_pth, "w") as f:
-    json.dump(users, f)
+    json.dump(users, f, indent=2)
 
 # Save to CSV for better reading
 df = pd.DataFrame.from_dict(users).T
